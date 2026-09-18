@@ -198,4 +198,20 @@ async function refreshBoard({ jiraBaseUrl, email, apiToken, pageId, log }) {
   return summary;
 }
 
-module.exports = { refreshBoard, computeRows, buildDocument, buildJqlA, JQL_B };
+// Fetches + filters the SR side only (no Confluence write) — used by the
+// Slack digest, which reports the same "awaiting a reply" list without
+// touching the Confluence page.
+async function fetchSrExternal({ jiraBaseUrl, email, apiToken }) {
+  const client = new AtlassianClient({ baseUrl: jiraBaseUrl, email, apiToken });
+  const issues = await client.searchAllIssues(buildJqlA(), FIELDS);
+  const rows = computeRows(issues);
+  const srExternal = rows
+    .filter((r) => r.project === 'SR' && r.externalActivity && r.isSupportAssignee && r.status !== 'Closed')
+    .sort(byUpdatedDesc);
+  const sev1 = srExternal.filter((r) => r.isSev1);
+  return { srExternal, sev1 };
+}
+
+module.exports = {
+  refreshBoard, computeRows, buildDocument, buildJqlA, JQL_B, FIELDS, formatIST, fetchSrExternal,
+};

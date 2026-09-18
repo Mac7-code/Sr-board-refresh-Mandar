@@ -27,9 +27,23 @@ if that person leaves or changes their password.
 2. Repo → Settings → Secrets and variables → Actions → add:
    - `JIRA_EMAIL` — the service/shared account's email
    - `JIRA_API_TOKEN` — the API token
+   - `SLACK_WEBHOOK_URL` — see below
 3. That's it — `.github/workflows/refresh.yml` is already in the repo and starts running
    on its own once pushed (also has a manual "Run workflow" button under the Actions tab
    for on-demand testing).
+
+## Slack digest (every 2 hours)
+
+`.github/workflows/slack-notify.yml` posts the "SR awaiting a support reply" list
+(Sev-1 first) to a Slack channel via an Incoming Webhook — separate from the Confluence
+board, and it does not touch the Confluence page.
+
+Set up an Incoming Webhook once: https://api.slack.com/apps → create an app → **Incoming
+Webhooks** → activate → **Add New Webhook to Workspace** → pick the channel → copy the
+URL → add it as the `SLACK_WEBHOOK_URL` repo secret.
+
+Runs independently of the board refresh — same Jira query, same filtering rules, its own
+2-hour schedule (`slack-notify.js` / `src/lib/slack.js`).
 
 ## Things to know about GitHub's scheduler
 
