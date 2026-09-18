@@ -9,14 +9,10 @@
 
 const { formatIST } = require('./board');
 
-const COLS = [
-  ['KEY', 9],
-  ['SEV', 6],
-  ['STATUS', 19],
-  ['ASSIGNEE', 17],
-  ['LAST ACTIVITY', 17],
-  ['UPDATED', 13],
-];
+const HEADERS = ['KEY', 'SEV', 'STATUS', 'ASSIGNEE', 'LAST ACTIVITY', 'UPDATED'];
+// Safety cap only — real column widths are sized to the longest actual value
+// (see computeColumnWidths), so typical names/statuses are never cut off.
+const MAX_COL_WIDTH = 30;
 
 function pad(value, width) {
   const str = String(value);
@@ -31,14 +27,8 @@ function sevLabel(r) {
   return '-';
 }
 
-function tableHeader() {
-  const header = COLS.map(([label, w]) => pad(label, w)).join(' ');
-  const rule = COLS.map(([, w]) => '-'.repeat(w)).join(' ');
-  return `${header}\n${rule}`;
-}
-
-function tableRow(r) {
-  const values = [
+function rowValues(r) {
+  return [
     r.key,
     sevLabel(r),
     r.status,
@@ -46,7 +36,23 @@ function tableRow(r) {
     r.lastActor || 'no comment',
     r.updated ? formatIST(r.updated, 'row') : '-',
   ];
-  return COLS.map(([, w], i) => pad(values[i], w)).join(' ');
+}
+
+function computeColumnWidths(rows) {
+  return HEADERS.map((h, i) => {
+    const longest = rows.reduce((max, r) => Math.max(max, String(rowValues(r)[i]).length), h.length);
+    return Math.min(longest, MAX_COL_WIDTH);
+  });
+}
+
+function tableHeader(widths) {
+  const header = HEADERS.map((h, i) => pad(h, widths[i])).join(' ');
+  const rule = widths.map((w) => '-'.repeat(w)).join(' ');
+  return `${header}\n${rule}`;
+}
+
+function tableRow(r, widths) {
+  return rowValues(r).map((v, i) => pad(v, widths[i])).join(' ');
 }
 
 // Keeps each code block comfortably under Slack's 3000-char section limit.
@@ -73,10 +79,15 @@ function buildMessage({ srExternal, sev1 }) {
     blocks.push({ type: 'section', text: { type: 'mrkdwn', text: 'Nothing waiting. Every SR has had a support reply since the last outside message.' } });
   } else {
     const ordered = [...sev1, ...srExternal.filter((r) => !r.isSev1)];
+    const widths = computeColumnWidths(ordered);
     const rowChunks = chunk(ordered, 20);
-    rowChunks.forEach((group) => {
-      const lines = [tableHeader(), ...group.map(tableRow)].join('\n');
-      blocks.push({ type: 'section', text: { type: 'mrkdwn', text: '```' + lines + '\n```' } });
+    // Header only appears once, on the first block, so a split table still
+    // reads as one continuous table rather than several separate ones.
+    rowChunks.forEach((group, idx) => {
+      const lines = idx === 0
+        ? [tableHeader(widths), ...group.map((r) => tableRow(r, widths))]
+        : group.map((r) => tableRow(r, widths));
+      blocks.push({ type: 'section', text: { type: 'mrkdwn', text: '```' + lines.join('\n') + '\n```' } });
     });
     // Ticket links aren't clickable inside a code block, so list them
     // separately, compact, underneath the table.
