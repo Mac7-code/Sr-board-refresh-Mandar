@@ -89,12 +89,6 @@ function buildMessage({ srExternal, sev1 }) {
         : group.map((r) => tableRow(r, widths));
       blocks.push({ type: 'section', text: { type: 'mrkdwn', text: '```' + lines.join('\n') + '\n```' } });
     });
-    // Ticket links aren't clickable inside a code block, so list them
-    // separately, compact, underneath the table.
-    blocks.push({
-      type: 'context',
-      elements: [{ type: 'mrkdwn', text: ordered.map((r) => `<${r.url}|${r.key}>`).join('  ') }],
-    });
   }
 
   return {
