@@ -55,11 +55,31 @@ function tableRow(r, widths) {
   return rowValues(r).map((v, i) => pad(v, widths[i])).join(' ');
 }
 
-// Keeps each code block comfortably under Slack's 3000-char section limit.
-function chunk(arr, size) {
-  const out = [];
-  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
-  return out;
+// Packs as many rows as fit into one code block, only starting a new block
+// (which Slack renders as a visibly separate box, with a gap) once adding
+// another row would cross Slack's 3000-char section limit. At normal ticket
+// volumes this yields a single block — one continuous table, no gap.
+const SECTION_CHAR_LIMIT = 2900;
+
+function packRowsIntoBlocks(rows, widths) {
+  const blocks = [];
+  let current = [tableHeader(widths)];
+  let currentLen = current[0].length;
+
+  for (const r of rows) {
+    const line = tableRow(r, widths);
+    const projectedLen = currentLen + 1 + line.length;
+    if (projectedLen > SECTION_CHAR_LIMIT) {
+      blocks.push(current.join('\n'));
+      current = [line];
+      currentLen = line.length;
+    } else {
+      current.push(line);
+      currentLen = projectedLen;
+    }
+  }
+  blocks.push(current.join('\n'));
+  return blocks;
 }
 
 function buildMessage({ srExternal, sev1 }) {
@@ -80,15 +100,9 @@ function buildMessage({ srExternal, sev1 }) {
   } else {
     const ordered = [...sev1, ...srExternal.filter((r) => !r.isSev1)];
     const widths = computeColumnWidths(ordered);
-    const rowChunks = chunk(ordered, 20);
-    // Header only appears once, on the first block, so a split table still
-    // reads as one continuous table rather than several separate ones.
-    rowChunks.forEach((group, idx) => {
-      const lines = idx === 0
-        ? [tableHeader(widths), ...group.map((r) => tableRow(r, widths))]
-        : group.map((r) => tableRow(r, widths));
-      blocks.push({ type: 'section', text: { type: 'mrkdwn', text: '```' + lines.join('\n') + '\n```' } });
-    });
+    for (const text of packRowsIntoBlocks(ordered, widths)) {
+      blocks.push({ type: 'section', text: { type: 'mrkdwn', text: '```' + text + '\n```' } });
+    }
   }
 
   return {
