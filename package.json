@@ -1,0 +1,13 @@
+{
+  "name": "sr-board-refresh",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Refreshes the SD - Support Live Board Confluence page from Jira every 15 minutes via GitHub Actions.",
+  "main": "run.js",
+  "scripts": {
+    "start": "node run.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

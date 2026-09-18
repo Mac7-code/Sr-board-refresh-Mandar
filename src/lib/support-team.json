@@ -1,0 +1,20 @@
+{
+  "groupName": "sd-support-team",
+  "members": [
+    { "name": "Mandar Kadam",         "accountId": "712020:c771d87e-a212-4daa-ad89-2e0c51e9679a" },
+    { "name": "Sunny Garasia",        "accountId": "712020:88da7e52-7bd2-4ebb-bbb6-341ba54352b1" },
+    { "name": "Lesha Damania",        "accountId": "712020:ba999388-a483-49f0-a4dc-7ba45f94e415" },
+    { "name": "Vivek Shinde",         "accountId": "712020:f35f9877-6f77-4fdf-8f7f-67f1d241a873" },
+    { "name": "Navinkumar Sarkanya",  "accountId": "712020:a5674f8d-e20c-45b2-b511-ae4db99fba06" },
+    { "name": "Nehal Ahmad",          "accountId": "712020:382f7aed-ad6e-47e7-95d3-24486e06b81f" },
+    { "name": "Ajinkya Thakare",      "accountId": "712020:c54278bc-e358-488f-84c6-169ba6aed5a8" },
+    { "name": "Aniket Gawali",        "accountId": "712020:c05aef60-fcf3-4595-bd55-890547fa4dc8" },
+    { "name": "Shayan Bhattacharya",  "accountId": "712020:9ac78dbb-744d-43ee-8d04-92c4d3a9dfb7" },
+    { "name": "Pratik Upadhye",       "accountId": "712020:6a280e76-4631-4966-9f28-73ed087e1180" },
+    { "name": "Kishan Singh",         "accountId": "6267ba3ed364ae0068091306" },
+    { "name": "Pratikesh Salgaonkar", "accountId": "623301906a6824006971630d" },
+    { "name": "Jigar SHAH",           "accountId": "70121:fefae204-cdee-4402-aeed-f4780f7b396a" },
+    { "name": "Arnaud LESELLIER",     "accountId": "70121:a3e6cd7b-cef2-40b0-8683-9a34da1dd9e4" }
+  ],
+  "botAccounts": ["Automation for Jira"]
+}
